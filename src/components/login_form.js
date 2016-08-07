@@ -8,6 +8,8 @@ class LoginForm extends Component {
 	componentWillMount() {
 		//create auth here and put in props
 		this.props.createAuth();
+		//reset login in localStorage
+		localStorage.setItem('login', JSON.stringify(this.props.login));
 	}
 
 	static contextTypes = {
@@ -16,7 +18,7 @@ class LoginForm extends Component {
 
 	onSubmit(input) {
 		const authClient = this.props.auth;
-		console.log(authClient.auth);
+		console.log(authClient);
 		console.log(input)
 
 		// WORKING BUT SOSO
@@ -39,37 +41,50 @@ class LoginForm extends Component {
 		//   console.error(err);
 		// });
 
-		this.props.loginAuth(input, authClient)
-		.then((action) => { // On success
-			const transaction = action.payload;
-			localStorage.setItem('authResponse', JSON.stringify(transaction));
-			// if(action.error) {
-			// 	console.error(transaction.message);
-			// 	return;
-			// }
-		 	switch(transaction.status) {
-		    
-				case 'SUCCESS':
-			      authClient.session.setCookieAndRedirect(transaction.sessionToken, authClient.options.redirectUri+"home"); // Sets a cookie on redirect
-			      break;
+		this.props.loginAuth(input, authClient);
 
-			    default:
-			      throw 'We cannot handle the ' + transaction.status + ' status';
-		 	}
-		})
-		.catch((err) => {
-			console.error("in error", error);
-		});
-		// .fail(function(err) { // On failure
-		//   console.error(err);
+		// WORKING LESS ELEGANT
+		// .then((action) => { // On success
+		// 	const transaction = action.payload;
+		// 	localStorage.setItem('authResponse', JSON.stringify(transaction));
+		// 	// if(action.error) {
+		// 	// 	console.error(transaction.message);
+		// 	// 	return;
+		// 	// }
+		//  	switch(transaction.status) {
+		    
+		// 		case 'SUCCESS':
+		// 	      authClient.session.setCookieAndRedirect(transaction.sessionToken, authClient.options.redirectUri+"home"); // Sets a cookie on redirect
+		// 	      break;
+
+		// 	    default:
+		// 	      throw 'We cannot handle the ' + transaction.status + ' status';
+		//  	}
+		// })
+		// .catch((err) => {
+		// 	console.error("in error", error);
 		// });
+		
+		//console.log(this.props.authResponse);
+	}
+
+	redirect() {
+		console.log(this.props);
+		const { auth, login } = this.props;
+		
+		localStorage.setItem('login', JSON.stringify(login));
+		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri+"home"); // Sets a cookie on redirect
 	}
 
 	render() {
-		const { fields:  { username, password }, handleSubmit } = this.props;
+		const { fields:  { username, password }, login, handleSubmit } = this.props;
+
+		if(login.success) {
+			this.redirect();
+		}
 
 		return (
-			<div className="row">
+			<div className="row under-header">
 			  <div className="col-md-3"></div>
 			  <div className="col-md-6">
 			    <div className="well" style={{ background: 'none' }}>
@@ -97,6 +112,7 @@ class LoginForm extends Component {
 			        </form>
 			      </center>
 			      {/*<pre ng-if="error" style="color:red">Error = {{error | json}}</pre>*/}
+			      {login.error ? login.res.message : ''}
 			    </div>
 			  </div>
 			  <div className="col-md-3"></div>
@@ -119,7 +135,7 @@ function validate(values) {
 }
 
 function mapStateToProps(state) {
-	return { auth: state.auth };
+	return { auth: state.auth, login: state.login };
 }
 
 export default reduxForm({

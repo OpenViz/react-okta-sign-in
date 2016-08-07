@@ -6,7 +6,7 @@ import LoginReducer from './reducer_login';
 
 const rootReducer = combineReducers({
 	auth : AuthReducer,
-	authResponse : LoginReducer,
+	login : LoginReducer,
 	form: formReducer
 });
 

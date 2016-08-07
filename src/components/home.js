@@ -4,20 +4,20 @@ import { connect } from 'react-redux';
 class Home extends Component {
 
 	render() {
-		console.log(this.props);
-		console.log(JSON.parse(localStorage.getItem('authResponse')));
-		const authResponse = JSON.parse(localStorage.getItem('authResponse'));
-		if(!authResponse) {
+		const { login } = this.props;
+		console.log(JSON.parse(localStorage.getItem('login')));
+		console.log(login);
+		if(login && login.success) {
 			return (
-				<div>
-					<h1>FAIL!!!!</h1>
+				<div className="under-header">
+					<h1>HOME!!!!</h1>
 				</div>
 			);
 		}
 		
 		return (
-			<div>
-				<h1>HOME!!!!</h1>
+			<div className="under-header">
+				<h1>FAIL!!!!</h1>
 			</div>
 		);
 		
@@ -25,7 +25,7 @@ class Home extends Component {
 }
 
 function mapStateToProps(state) {
-	return { authResponse: state.authResponse };
+	return { login: JSON.parse(localStorage.getItem('login')) };
 }
 
 //export default connect(mapStateToProps)(Home);

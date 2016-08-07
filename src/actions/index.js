@@ -1,5 +1,6 @@
 export const CREATE_AUTH = 'CREATE_AUTH';
-export const LOGIN_AUTH = 'LOGIN_AUTH';
+export const LOGIN_AUTH_SUCCESS = 'LOGIN_AUTH_SUCCESS';
+export const LOGIN_AUTH_ERROR = 'LOGIN_AUTH_ERROR';
 
 export const BASE_URL = "https://dev-570863.oktapreview.com";
 export const CLIENT_ID = "OaCz3jBQxbaEnsDAFO3A";
@@ -18,16 +19,38 @@ export function createAuth() {
 	};
 }
 
-export function loginAuth(user, auth) {
-	console.log('loginAuth', auth);
-	console.log('user', user);
-	const request = auth.signIn({
-		username: user.username,
-		password: user.password
-	});
+function loginAuthSuccess(response) {
+	if(response.status === 'SUCCESS') {
+		return {
+			type: LOGIN_AUTH_SUCCESS,
+			payload: response
+		};	
+	}
 
 	return {
-		type: LOGIN_AUTH,
-		payload: request
+		type: LOGIN_AUTH_ERROR,
+		payload: response
+	};
+}
+
+function loginAuthError(error) {
+	return {
+		type: LOGIN_AUTH_ERROR,
+		payload: error
+	};
+}
+
+export function loginAuth(user, auth) {
+	return function(dispatch) {
+		auth.signIn({
+			username: user.username,
+			password: user.password
+		})
+		.then((response) => {
+			dispatch(loginAuthSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(loginAuthError(error));
+		});
 	};
 }

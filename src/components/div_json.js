@@ -6,7 +6,7 @@ const DivJSON = (props) => {
 		return (
 			<h3>{props.title}
 				<br />
-				<pre><code><JSONTree data={props.json} hideRoot="true" /></code></pre>
+				<pre><code><JSONTree data={props.json} hideRoot={true} /></code></pre>
 			</h3>
 		);
 	}

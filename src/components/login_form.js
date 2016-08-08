@@ -8,8 +8,6 @@ class LoginForm extends Component {
 	componentWillMount() {
 		//	create auth and put in props
 		this.props.createAuth();
-		// reset login in localStorage (maybe move it in signout!)
-		localStorage.setItem('login', JSON.stringify(this.props.login));
 	}
 
 	static contextTypes = {
@@ -17,21 +15,18 @@ class LoginForm extends Component {
 	};
 
 	onSubmit(input) {
-		const authClient = this.props.auth;
-		console.log(authClient);
-		console.log(input);
+		const { auth } = this.props;
 
-		this.props.loginAuth(input, authClient);
+		this.props.loginAuth(input, auth);
 	}
 
 	redirect() {
 		const { auth, login } = this.props;
-		
-		localStorage.setItem('auth', JSON.stringify(auth));
-		// save auth and login in localStorage before redirection
+
+		// save login in localStorage before redirection
 		localStorage.setItem('login', JSON.stringify(login));
-		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri + 'home'); // Sets a cookie on redirect
-		//this.context.router.push(auth.options.redirectUri+'home');
+		// sets a cookie on redirect
+		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri + 'home'); 
 	}
 
 	render() {
@@ -49,6 +44,10 @@ class LoginForm extends Component {
 			    <div className="well" style={{ background: 'none' }}>
 			      <center>
 			        <div className="page-header"><h1>Sign In</h1></div>
+			        <div className="text-help text-danger">
+			      		{login.error ? login.res.message : ''}
+			      	</div>
+			      	<br />
 			        <form onSubmit={handleSubmit(this.onSubmit.bind(this))}>
 			          <div className="input-group input-group-lg">
 			          	<div className={`form-group ${username.touched && username.invalid ? 'has-error' : ''}`}>
@@ -69,9 +68,8 @@ class LoginForm extends Component {
 			          <br />
 			          <input className="btn btn-primary btn-lg" type="submit" value="Sign In" />
 			        </form>
+			        <br />
 			      </center>
-			      {/*<pre ng-if="error" style="color:red">Error = {{error | json}}</pre>*/}
-			      {login.error ? login.res.message : ''}
 			    </div>
 			  </div>
 			  <div className="col-md-3"></div>

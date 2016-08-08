@@ -4,7 +4,7 @@ import JSONTree from 'react-json-tree';
 
 import DivJSON from './div_json';
 
-import { createAuth, getTokens, renewIdToken, decodeIdToken, refreshSession, closeSession } from '../actions/index';
+import { createAuth, getTokens, renewIdToken, decodeIdToken, refreshSession, closeSession, signOut } from '../actions/index';
 
 class Home extends Component {
 	componentWillMount() {
@@ -12,9 +12,9 @@ class Home extends Component {
 		this.props.createAuth();
 	}
 
-	// localStorageToState() {
-
-	// }
+	sessionClosed() {
+		return localStorage.getItem('session_closed');
+	}
 
 	getTokens() {
 		const { auth, login } = this.props;
@@ -38,30 +38,42 @@ class Home extends Component {
 
 	closeSession() {
 		const { auth } = this.props;
+		localStorage.setItem('session_closed', true);
 		this.props.closeSession(auth);
 	}
 
 	signOut() {
+		const { auth } = this.props;
+		this.props.signOut(auth);
+	}
 
+	clearStorageAnRedirect() {
+		localStorage.clear();
+		window.location = "/";
 	}
 
 	render() {
 		console.log(this.props);
 
 		const { login, session, tokens } = this.props;
+
+		if(session.logout) {
+			this.clearStorageAnRedirect();
+		}
 		
-		if(login && login.success) { //maybe add className under-header
+		if(login && login.success) {
 			return (
 				<div className="row under-header"> 
 					<div className="col-md-2"><br />
 						<div className="affix">
 							{ (() => {
-							  	if(session.active) {
+							  	if(session.active && !this.sessionClosed()) {
 									return (
 										<div className="btn-group-vertical">
 									     	{(()=>{if(!tokens.idToken){return <button type="button" className="btn btn-lg btn-primary" onClick={this.getTokens.bind(this)}>Get Tokens</button>;}})()}
 										  	<button type="button" className="btn btn-lg btn-success" onClick={this.refreshSession.bind(this)}>Refresh Session</button>
 										  	<button type="button" className="btn btn-lg btn-danger" onClick={this.closeSession.bind(this)}>Close Session</button>
+										  	<button type="button" className="btn btn-lg btn-info" onClick={this.signOut.bind(this)}>Re-Authenticate</button>
 										</div>
 									);
 								} else {
@@ -70,7 +82,7 @@ class Home extends Component {
 							})() }
 							<br /><br /><br />
 							{ (() => {
-						  		if(session.active && tokens.idToken) {
+						  		if(session.active && !this.sessionClosed() && tokens.idToken) {
 									 return (
 									 	<div className="btn-group-vertical">
 									     	<button type="button" className="btn btn-lg btn-primary" onClick={this.renewIdToken.bind(this)}>Renew ID Token</button>
@@ -84,18 +96,17 @@ class Home extends Component {
 					</div>
 					<div className="col-md-1"></div>
 						<div className="col-md-9">
-							{/*<h3><JSONTree data={this.props.auth}/></h3>*/}
 							<h3 id="userResponseAnchor">
 								User Response
 								{ (() => {
-									if(session.active) {
+									if(session.active && !this.sessionClosed()) {
 										return <span className="label label-primary pull-right">Active Session</span>
 									} else {
 										return <span className="label label-warning pull-right">Closed Session</span>
 									}
 								})() }
 							</h3>
-						  	<pre><JSONTree data={login.res} hideRoot="true" /></pre>
+						  	<pre><JSONTree data={login.res} hideRoot={true} /></pre>
 						  	<DivJSON json={tokens.idToken} title="ID Token" />
 						  	<DivJSON json={tokens.accessToken} title="Access Token" />
 						  	<DivJSON json={tokens.decodedIdToken} title="Decoded ID Token" />
@@ -118,4 +129,4 @@ function mapStateToProps(state) {
 	return { auth: state.auth, login: JSON.parse(localStorage.getItem('login')), tokens: state.tokens, session: state.session };
 }
 
-export default connect(mapStateToProps, { createAuth, getTokens, renewIdToken, decodeIdToken, refreshSession, closeSession })(Home);
+export default connect(mapStateToProps, { createAuth, getTokens, renewIdToken, decodeIdToken, refreshSession, closeSession, signOut })(Home);

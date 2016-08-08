@@ -11,6 +11,8 @@ export const REFRESH_SESSION_SUCCESS = 'REFRESH_SESSION_SUCCESS';
 export const REFRESH_SESSION_ERROR = 'REFRESH_SESSION_ERROR';
 export const CLOSE_SESSION_SUCCESS = 'CLOSE_SESSION_SUCCESS';
 export const CLOSE_SESSION_ERROR = 'CLOSE_SESSION_ERROR';
+export const LOGOUT_AUTH_SUCCESS = 'LOGOUT_AUTH_SUCCESS';
+export const LOGOUT_AUTH_ERROR = 'LOGOUT_AUTH_ERROR';
 
 const BASE_URL = "https://dev-570863.oktapreview.com";
 const CLIENT_ID = "OaCz3jBQxbaEnsDAFO3A";
@@ -64,7 +66,6 @@ export function loginAuth(user, auth) {
 			password: user.password
 		})
 		.then((response) => {
-			console.log('login promise', response);
 			dispatch(loginAuthSuccess(response));
 		})
 		.catch((error) => {
@@ -99,11 +100,9 @@ export function getTokens(login, auth) {
 				scope: ['openid', 'email', 'profile', 'groups']
 			})
 			.then((response) => {
-				console.log('response', response);
 				dispatch(getTokensSuccess(response));
 			})
 			.catch((error) => {
-				console.log('error', error);
 				dispatch(getTokenError(error));
 			});
 		} else {
@@ -131,7 +130,6 @@ function renewIdTokenError(error) {
 export function renewIdToken(auth) {
 	return function(dispatch) {
 		if(auth.session.exists()) {
-			console.log('in thunk');
 			auth.idToken.refresh({ 'scope': ['openid', 'email', 'profile', 'groups'] })
 			.then((response) => {
 				dispatch(renewIdTokensSuccess(response));
@@ -214,6 +212,49 @@ export function closeSession(auth) {
 		})
 		.catch((error) => {
 			dispatch(closeSessionError(error));
+		});
+	}
+}
+
+// SIGNOUT ACTION
+
+function signOutSuccess(response) {
+	return {
+		type: LOGOUT_AUTH_SUCCESS,
+		payload: response
+	}
+}
+
+function signOutError(error) {
+	return {
+		type: LOGOUT_AUTH_ERROR,
+		payload: error
+	}
+}
+
+function closeSessionAndSignOut() {
+	return function(dispatch) {
+		auth.signOut()
+		.then((response) => {
+			dispatch(signOutSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(signOutError(error));
+		});
+	}
+}
+
+export function signOut(auth) {
+	return function(dispatch) {
+		auth.session.exists()
+		.then((exists) => {
+			if(exists) {
+				closeSessionAndSignOut();  // TO TEST
+			}
+			dispatch(signOutSuccess('Session already closed.'));
+		})
+		.catch((error) => {
+			dispatch(signOutError(error));
 		});
 	}
 }

@@ -7,6 +7,10 @@ export const RENEW_ID_TOKEN_SUCCESS = 'RENEW_ID_TOKEN_SUCCESS';
 export const RENEW_ID_TOKEN_ERROR = 'RENEW_ID_TOKEN_ERROR';
 export const DECODE_ID_TOKEN_SUCCESS = 'DECODE_ID_TOKEN_SUCCESS';
 export const DECODE_ID_TOKEN_ERROR = 'DECODE_ID_TOKEN_ERROR';
+export const REFRESH_SESSION_SUCCESS = 'REFRESH_SESSION_SUCCESS';
+export const REFRESH_SESSION_ERROR = 'REFRESH_SESSION_ERROR';
+export const CLOSE_SESSION_SUCCESS = 'CLOSE_SESSION_SUCCESS';
+export const CLOSE_SESSION_ERROR = 'CLOSE_SESSION_ERROR';
 
 const BASE_URL = "https://dev-570863.oktapreview.com";
 const CLIENT_ID = "OaCz3jBQxbaEnsDAFO3A";
@@ -130,11 +134,9 @@ export function renewIdToken(auth) {
 			console.log('in thunk');
 			auth.idToken.refresh({ 'scope': ['openid', 'email', 'profile', 'groups'] })
 			.then((response) => {
-				console.log('response', response);
 				dispatch(renewIdTokensSuccess(response));
 			})
 			.catch((error) => {
-				console.log('error', error);
 				dispatch(renewIdTokenError(error));
 			});
 		} else {
@@ -157,5 +159,61 @@ export function decodeIdToken(token, auth) {
 	return {
 		type: DECODE_ID_TOKEN_ERROR,
 		payload: error
+	}
+}
+
+// REFRESH SESSION ACTION
+
+function refreshSessionSuccess(response) {
+	return {
+		type: REFRESH_SESSION_SUCCESS,
+		payload: response
+	};
+}
+
+function refreshSessionError(error) {
+	return {
+		type: REFRESH_SESSION_ERROR,
+		payload: error
+	};
+}
+
+export function refreshSession(auth) {
+	return function(dispatch) {
+		auth.session.refresh()
+		.then((response) => {
+			dispatch(refreshSessionSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(refreshSessionError(error));
+		});
+	}
+}
+
+// CLOSE SESSION ACTION
+
+function closeSessionSuccess(response) {
+	return {
+		type: CLOSE_SESSION_SUCCESS,
+		payload: response
+	};
+}
+
+function closeSessionError(error) {
+	return {
+		type: CLOSE_SESSION_ERROR,
+		payload: error
+	};
+}
+
+export function closeSession(auth) {
+	return function(dispatch) {
+		auth.session.close()
+		.then((response) => {
+			dispatch(closeSessionSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(closeSessionError(error));
+		});
 	}
 }

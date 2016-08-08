@@ -7,7 +7,7 @@ const Header = () => {
 		        <div className="container-fluid">
 		          {/* Brand and toggle get grouped for better mobile display */}
 		          <div className="navbar-header">
-		              <a className="navbar-brand" href="#/">
+		              <a className="navbar-brand" href="/">
 		                <img src="https://www.okta.com/sites/all/themes/Okta/images/logo.svg" height="100%" width="100%"/>
 		              </a>
 		          </div>

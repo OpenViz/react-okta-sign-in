@@ -6,9 +6,9 @@ import { createAuth, loginAuth } from '../actions/index';
 
 class LoginForm extends Component {
 	componentWillMount() {
-		//create auth here and put in props
+		//	create auth and put in props
 		this.props.createAuth();
-		//reset login in localStorage
+		// reset login in localStorage (maybe move it in signout!)
 		localStorage.setItem('login', JSON.stringify(this.props.login));
 	}
 
@@ -21,62 +21,19 @@ class LoginForm extends Component {
 		console.log(authClient);
 		console.log(input)
 
-		// WORKING BUT SOSO
-		// authClient.signIn({
-		// 	username: input.username,
-		// 	password: input.password
-		// })
-		// .then(function(transaction) { // On success
-		//  switch(transaction.status) {
-		    
-		//     case 'SUCCESS':
-		//       authClient.session.setCookieAndRedirect(transaction.sessionToken, authClient.options.redirectUri+"home"); // Sets a cookie on redirect
-		//       break;
-
-		//     default:
-		//       throw 'We cannot handle the ' + transaction.status + ' status';
-		//   }
-		// })
-		// .fail(function(err) { // On failure
-		//   console.error(err);
-		// });
-
 		this.props.loginAuth(input, authClient);
-
-		// WORKING LESS ELEGANT
-		// .then((action) => { // On success
-		// 	const transaction = action.payload;
-		// 	localStorage.setItem('authResponse', JSON.stringify(transaction));
-		// 	// if(action.error) {
-		// 	// 	console.error(transaction.message);
-		// 	// 	return;
-		// 	// }
-		//  	switch(transaction.status) {
-		    
-		// 		case 'SUCCESS':
-		// 	      authClient.session.setCookieAndRedirect(transaction.sessionToken, authClient.options.redirectUri+"home"); // Sets a cookie on redirect
-		// 	      break;
-
-		// 	    default:
-		// 	      throw 'We cannot handle the ' + transaction.status + ' status';
-		//  	}
-		// })
-		// .catch((err) => {
-		// 	console.error("in error", error);
-		// });
-		
-		//console.log(this.props.authResponse);
 	}
 
 	redirect() {
-		console.log(this.props);
 		const { auth, login } = this.props;
 		
+		// save auth and login in localStorage before redirection
 		localStorage.setItem('login', JSON.stringify(login));
 		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri+"home"); // Sets a cookie on redirect
 	}
 
 	render() {
+		console.log(this.props);
 		const { fields:  { username, password }, login, handleSubmit } = this.props;
 
 		if(login.success) {

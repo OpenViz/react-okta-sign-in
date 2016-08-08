@@ -8,7 +8,7 @@ import { createAuth, getTokens, renewIdToken, decodeIdToken, refreshSession, clo
 
 class Home extends Component {
 	componentWillMount() {
-		//	create auth and put in props
+		//	create auth that goes in props
 		this.props.createAuth();
 	}
 
@@ -53,8 +53,6 @@ class Home extends Component {
 	}
 
 	render() {
-		console.log(this.props);
-
 		const { login, session, tokens } = this.props;
 
 		if(session.logout) {

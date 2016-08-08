@@ -21,8 +21,12 @@ const REDIRECT_URI = "http://localhost:8080/";
 const RESPONSE_TYPE = ['id_token', 'token'];
 var CLIENT_SCOPES = ['openid', 'email', 'profile', 'groups'];
 
-// CREATE AUTH ACTION
 
+// CREATE AUTH ACTIONS
+
+/**
+ *	Creates the Okta Authentication binding
+ */
 export function createAuth(uri) {
 	const request = new OktaAuth({
 		url: BASE_URL,
@@ -36,7 +40,26 @@ export function createAuth(uri) {
 	};
 }
 
-// LOGIN ACTION
+// LOGIN ACTIONS
+
+/**
+ *	Uses the Okta AuthSDK to establish a session given
+ *	"username" and "password"	
+ */
+export function loginAuth(user, auth) {
+	return function(dispatch) {
+		auth.signIn({
+			username: user.username,
+			password: user.password
+		})
+		.then((response) => {
+			dispatch(loginAuthSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(loginAuthError(error));
+		});
+	};
+}
 
 function loginAuthSuccess(response) {
 	if(response.status === 'SUCCESS') {
@@ -59,38 +82,12 @@ function loginAuthError(error) {
 	};
 }
 
-export function loginAuth(user, auth) {
-	return function(dispatch) {
-		auth.signIn({
-			username: user.username,
-			password: user.password
-		})
-		.then((response) => {
-			dispatch(loginAuthSuccess(response));
-		})
-		.catch((error) => {
-			dispatch(loginAuthError(error));
-		});
-	};
-}
+// GET TOKENS ACTIONS
 
-
-// GET TOKENS ACTION
-
-function getTokensSuccess(response) {
-	return {
-		type: GET_TOKEN_SUCCESS,
-		payload: response
-	};
-}
-
-function getTokenError(error) {
-	return {
-		type: GET_TOKEN_ERROR,
-		payload: error
-	};
-}
-
+/**
+ *	Given a sessionToken, returns "idToken" and/or "accessToken",
+ *	and user "clams"
+ */
 export function getTokens(login, auth) {
 	return function(dispatch) {
 		if(auth.session.exists()) {
@@ -111,22 +108,25 @@ export function getTokens(login, auth) {
 	}
 }
 
-// REFRESH TOKEN ACTION
-
-function renewIdTokensSuccess(response) {
+function getTokensSuccess(response) {
 	return {
-		type: RENEW_ID_TOKEN_SUCCESS,
+		type: GET_TOKEN_SUCCESS,
 		payload: response
 	};
 }
 
-function renewIdTokenError(error) {
+function getTokenError(error) {
 	return {
-		type: RENEW_ID_TOKEN_ERROR,
+		type: GET_TOKEN_ERROR,
 		payload: error
 	};
 }
 
+// REFRESH TOKEN ACTIONS
+
+/**
+ *	Renews the current ID token
+ */
 export function renewIdToken(auth) {
 	return function(dispatch) {
 		if(auth.session.exists()) {
@@ -143,8 +143,26 @@ export function renewIdToken(auth) {
 	}
 }
 
-// DECODE TOKEN ACTION
+function renewIdTokensSuccess(response) {
+	return {
+		type: RENEW_ID_TOKEN_SUCCESS,
+		payload: response
+	};
+}
 
+function renewIdTokenError(error) {
+	return {
+		type: RENEW_ID_TOKEN_ERROR,
+		payload: error
+	};
+}
+
+// DECODE TOKEN ACTIONS
+
+/**
+ *	Given an "idToken", it decodes the
+ *	header, payload, and signiture
+ */
 export function decodeIdToken(token, auth) {
 	const decoded = auth.idToken.decode(token.idToken);
 	if(decoded) {
@@ -160,7 +178,22 @@ export function decodeIdToken(token, auth) {
 	}
 }
 
-// REFRESH SESSION ACTION
+// REFRESH SESSION ACTIONS
+
+/**
+ *	Refreshes the current session
+ */
+export function refreshSession(auth) {
+	return function(dispatch) {
+		auth.session.refresh()
+		.then((response) => {
+			dispatch(refreshSessionSuccess(response));
+		})
+		.catch((error) => {
+			dispatch(refreshSessionError(error));
+		});
+	}
+}
 
 function refreshSessionSuccess(response) {
 	return {
@@ -176,19 +209,22 @@ function refreshSessionError(error) {
 	};
 }
 
-export function refreshSession(auth) {
+// CLOSE SESSION ACTIONS
+
+/**
+ * 	Closes the current session
+ */
+export function closeSession(auth) {
 	return function(dispatch) {
-		auth.session.refresh()
+		auth.session.close()
 		.then((response) => {
-			dispatch(refreshSessionSuccess(response));
+			dispatch(closeSessionSuccess(response));
 		})
 		.catch((error) => {
-			dispatch(refreshSessionError(error));
+			dispatch(closeSessionError(error));
 		});
 	}
 }
-
-// CLOSE SESSION ACTION
 
 function closeSessionSuccess(response) {
 	return {
@@ -204,31 +240,23 @@ function closeSessionError(error) {
 	};
 }
 
-export function closeSession(auth) {
+// SIGNOUT ACTIONS
+
+/**
+ *	Logs the user out of the current session
+ */
+export function signOut(auth) {
 	return function(dispatch) {
-		auth.session.close()
-		.then((response) => {
-			dispatch(closeSessionSuccess(response));
+		auth.session.exists()
+		.then((exists) => {
+			if(exists) {
+				closeSessionAndSignOut();  // TO TEST
+			}
+			dispatch(signOutSuccess('Session already closed.'));
 		})
 		.catch((error) => {
-			dispatch(closeSessionError(error));
+			dispatch(signOutError(error));
 		});
-	}
-}
-
-// SIGNOUT ACTION
-
-function signOutSuccess(response) {
-	return {
-		type: LOGOUT_AUTH_SUCCESS,
-		payload: response
-	}
-}
-
-function signOutError(error) {
-	return {
-		type: LOGOUT_AUTH_ERROR,
-		payload: error
 	}
 }
 
@@ -244,17 +272,16 @@ function closeSessionAndSignOut() {
 	}
 }
 
-export function signOut(auth) {
-	return function(dispatch) {
-		auth.session.exists()
-		.then((exists) => {
-			if(exists) {
-				closeSessionAndSignOut();  // TO TEST
-			}
-			dispatch(signOutSuccess('Session already closed.'));
-		})
-		.catch((error) => {
-			dispatch(signOutError(error));
-		});
+function signOutSuccess(response) {
+	return {
+		type: LOGOUT_AUTH_SUCCESS,
+		payload: response
+	}
+}
+
+function signOutError(error) {
+	return {
+		type: LOGOUT_AUTH_ERROR,
+		payload: error
 	}
 }

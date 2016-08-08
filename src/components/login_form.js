@@ -30,7 +30,6 @@ class LoginForm extends Component {
 	}
 
 	render() {
-		console.log(this.props);
 		const { fields:  { username, password }, login, handleSubmit } = this.props;
 
 		if(login.success) {

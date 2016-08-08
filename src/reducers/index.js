@@ -7,11 +7,11 @@ import SessionReducer from './reducer_session';
 import TokensReducer from './reducer_tokens';
 
 const rootReducer = combineReducers({
-	auth : AuthReducer,
-	login : LoginReducer,
-	session: SessionReducer,
-	tokens: TokensReducer,
-	form: formReducer
+  auth : AuthReducer,
+  login : LoginReducer,
+  session: SessionReducer,
+  tokens: TokensReducer,
+  form: formReducer
 });
 
 export default rootReducer;

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import JSONTree from 'react-json-tree';
 
+import DivJSON from './div_json';
+
 import { createAuth, getTokens, renewIdToken, decodeIdToken } from '../actions/index';
 
 class Home extends Component {
@@ -29,36 +31,49 @@ class Home extends Component {
 		this.props.decodeIdToken(tokens.idToken, auth);
 	}
 
+	refreshSession() {
+
+	}
+
 	render() {
 		console.log(this.props);
 
-		const { login } = this.props;
+		const { login, session, token } = this.props;
 		
-		if(login && login.success) { //maybe add className under-header
+		if(true/*login && login.success*/) { //maybe add className under-header
 			return (
 				<div className="row under-header"> 
 					<div className="col-md-2"><br />
 						<div className="affix">
-							<div className="btn-group-vertical" /*ng-if="session == 'true'"*/ >
-						     	<button type="button" className="btn btn-lg btn-primary" onClick={this.getTokens.bind(this)}/*ng-click="getTokens(auth)" ng-if="!userInfo"*/ >Get Tokens</button>
-							  	<button type="button" className="btn btn-lg btn-success" /*ng-click="refreshSession()"*/ >Refresh Session</button>
-							  	<button type="button" className="btn btn-lg btn-danger" /*ng-click="closeSession()"*/ >Close Session</button>
-							</div>
+							{ (() => {
+							  	if(session) {
+									return (
+										<div className="btn-group-vertical" /*ng-if="session == 'true'"*/ >
+									     	<button type="button" className="btn btn-lg btn-primary" onClick={this.getTokens.bind(this)}/*ng-click="getTokens(auth)" ng-if="!userInfo"*/ >Get Tokens</button>
+										  	<button type="button" className="btn btn-lg btn-success" onClick={this.refreshSession.bind(this)}/*ng-click="refreshSession()"*/ >Refresh Session</button>
+										  	<button type="button" className="btn btn-lg btn-danger" /*ng-click="closeSession()"*/ >Close Session</button>
+										</div>
+										<br /><br /><br />
+									);
+								}
+							})() }
+							{ (() => {
+						  		if(session && tokens.idToken) {
+									 return (
+									 	<div className="btn-group-vertical" /*ng-if="session == 'true' && userInfo"*/ >
+									     	<button type="button" className="btn btn-lg btn-primary" onClick={this.renewIdToken.bind(this)}>Renew ID Token</button>
+										  	<button type="button" className="btn btn-lg btn-info" onClick={this.decodeIdToken.bind(this)}>Decode ID Token</button>
+										</div>
+									);
+								}
+							})() }
 							<br /><br /><br />
-							<div className="btn-group-vertical" /*ng-if="session == 'true' && userInfo"*/ >
-						     	<button type="button" className="btn btn-lg btn-primary" onClick={this.renewIdToken.bind(this)}>Renew ID Token</button>
-							  	<button type="button" className="btn btn-lg btn-info" onClick={this.decodeIdToken.bind(this)}>Decode ID Token</button>
-							  	<button type="button" className="btn btn-lg btn-danger" /*ng-if="userInfo.accessToken" ng-click="apiCall(userInfo.accessToken.accessToken)"*/ >Call External API</button>
-							</div>
-							<br /><br /><br />
-							<div /*ng-show="img && session == 'true'"*/ id="imgAnchor">
-								{/*<img ng-src="{{img}}" className="img-rounded"><br /><b>{{imgName}}</b>*/}
-							</div>
 							<button type="button" className="btn btn-lg btn-info" /*ng-if="session == 'false'" ng-click="signout()"*/ >Re-Authenticate</button>
 						</div>
 					</div>
 					<div className="col-md-1"></div>
 						<div className="col-md-9">
+							<h3><JSONTree data={this.props.auth}/></h3>
 							<h3 id="userResponseAnchor">
 								User Response
 								{ (() => {
@@ -70,26 +85,9 @@ class Home extends Component {
 								})() }
 							</h3>
 						  	<pre><JSONTree data={this.props.login.res} /></pre>
-						  	{ (() => {
-						  		if(this.props.tokens.idToken) {
-						  			return (
-						  				<h3 id="userInfoAnchor">ID Token
-						  				<br />
-	  									<pre><code><JSONTree data={this.props.tokens.idToken}/></code></pre>
-	  									</h3>
-						  			);
-						  		}
-						  	})() }
-						  	{ (() => {
-						  		if(this.props.tokens.decodedIdToken) {
-						  			return (
-						  				<h3 id="userInfoAnchor">Decoded ID Token
-						  				<br />
-	  									<pre><code><JSONTree data={this.props.tokens.decodedIdToken}/></code></pre>
-	  									</h3>
-						  			);
-						  		}
-						  	})() }
+						  	<DivJSON json={this.props.tokens.idToken} title="ID Token" />
+						  	<DivJSON json={this.props.tokens.accessToken} title="Access Token" />
+						  	<DivJSON json={this.props.tokens.decodedIdToken} title="Decoded ID Token" />
 						</div>
 				</div>
 			);
@@ -97,7 +95,7 @@ class Home extends Component {
 		
 		return (
 			<div className="under-header">
-				<h1>FAIL!!!!</h1>
+				<h3> Please <a href="/"> Sign in to continue</a></h3>
 			</div>
 		);
 		

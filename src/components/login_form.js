@@ -19,7 +19,7 @@ class LoginForm extends Component {
 	onSubmit(input) {
 		const authClient = this.props.auth;
 		console.log(authClient);
-		console.log(input)
+		console.log(input);
 
 		this.props.loginAuth(input, authClient);
 	}
@@ -27,9 +27,11 @@ class LoginForm extends Component {
 	redirect() {
 		const { auth, login } = this.props;
 		
+		localStorage.setItem('auth', JSON.stringify(auth));
 		// save auth and login in localStorage before redirection
 		localStorage.setItem('login', JSON.stringify(login));
-		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri+"home"); // Sets a cookie on redirect
+		auth.session.setCookieAndRedirect(login.res.sessionToken, auth.options.redirectUri + 'home'); // Sets a cookie on redirect
+		//this.context.router.push(auth.options.redirectUri+'home');
 	}
 
 	render() {
